@@ -58,12 +58,6 @@ def add_message(message, alignment='left'):
     message_box.config(state=tk.DISABLED)
     message_box.yview(tk.END)       # automatic scroll to the end
     
-    
-# Function to set up tags for alignment
-def setup_tags():
-    message_box.tag_configure('left_align', justify='left', lmargin1=10, lmargin2=10)
-    message_box.tag_configure('right_align', justify='right', rmargin=10)
-    
 
 # Event Handling Functions
 def _connect():
@@ -77,29 +71,28 @@ def _connect():
     username = username_textbox.get()
     if len(username) > 3:
         print(username)
-        client.sendall(username.encode())
+        client.sendall((username + '\n').encode())
     else:
-        # print("Your name, please.")
         showerror('Invalid Username', 'Username cannot be empty :/')
     
     # pass user's preferred langaugae
     language = language_dropdown.get()
     if len(language) > 0:
         print(language)
-        client.sendall(language.encode())
+        client.sendall((language).encode())
     else:
         showerror('Invalid Language Selection', 'Language cannot be empty and outside from given option  :/')
         exit(0)
     
-    # join_message = f'Hello Channel, Welcome our new member, {username}! :). \n {username} just joined Channel.'
-    # add_message(join_message)
     threading.Thread(target=listen_msg_from_server,args = (client,)).start()
-
+    username_textbox.config(state=tk.DISABLED)
+    join_button.config(state=tk.DISABLED)
 
 def send_message():
     message = text_area.get()
     if message:
         client.sendall(message.encode())
+        text_area.delete(0, len(message))
     else:
         showerror('Empty Message :/',"Message cannot be empty")
 
@@ -175,10 +168,7 @@ def listen_msg_from_server(client):
             message = response.split(' ~ ')[1]
             final_message = f'[{username}]: {message}'
             add_message(final_message)
-        else:
-            showerror('Error:/',"No Message received from client")
-            break
-            
+
             
 # main function
 def main():

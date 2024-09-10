@@ -63,7 +63,7 @@ def listen_messages(client, name, language):
 # Function to send a message to a particular client
 def msg_to_client(client, msg):
     try:
-        client.sendall(msg.encode(FORMAT))
+        client.send(msg.encode(FORMAT))
     except Exception as e:
         print(f"Error sending message to client: {e}")
 
@@ -78,7 +78,7 @@ def broadcast_messages(message, name, language):
             target_lang = user[0]['language']           # get the recepients selected language
             target_lang_code = LANGUAGE_CODES[target_lang]
             if target_lang_code != source_lang_code:
-                trans_message = translate_language(target=target_lang, message=message)
+                trans_message = translate_language(target=target_lang_code, message=message)
             else:
                 trans_message = message
             final_message = f"{name} ~ {trans_message}"
@@ -103,7 +103,7 @@ def broadcast_join_member_message(name):
         target_lang = user[0]['language']           # get the recepients selected language
         target_lang_code = LANGUAGE_CODES[target_lang]
         if target_lang_code != 'en':
-            trans_message = translate_language(target=target_lang, message=join_message)
+            trans_message = translate_language(target=target_lang_code, message=join_message)
         else:
             trans_message = join_message
         final_message = f"Channel ~ {trans_message}"
@@ -115,8 +115,7 @@ def handle_clients(client, address):
     print(f"[NEW CONNECTION] {address} connected.")  
  
     # Track the clients with their preference language and nickname
-    username = client.recv(2048).decode(FORMAT)
-    language = client.recv(2048).decode(FORMAT)
+    username, language = client.recv(2048).decode(FORMAT).split('\n')  # Read username
     if username != '' and language != '':
         with _clients_lock:
             _activeClients.append(({'name': username, 'language': language}, client))
